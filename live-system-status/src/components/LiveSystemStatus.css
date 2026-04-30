@@ -1,0 +1,439 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   LiveSystemStatus.css
+   Hilo-Inspired Design System — Animation tokens applied via CSS custom props
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Animation Token Custom Properties ─────────────────────────────────────── */
+/*    Canonical spec:  durations → fast/smooth/lazy | easings → snappy/organic  */
+.live-status-card {
+  /* ── Duration tokens ── */
+  --duration-fast:   150ms;   /* micro-interactions */
+  --duration-smooth: 300ms;   /* hover, badge transitions */
+  --duration-lazy:   600ms;   /* entrance, pulse base */
+
+  /* ── Easing tokens ── */
+  --easing-snappy:  cubic-bezier(0.2, 0, 0, 1);    /* decisive, no overshoot */
+  --easing-organic: cubic-bezier(0.4, 0, 0.2, 1);  /* natural, material-like */
+
+  /* ── Composed animation vars (derived from tokens above) ── */
+  --entrance-duration: var(--duration-lazy);      /* lazy  + organic */
+  --entrance-easing:   var(--easing-organic);
+  --entrance-delay:    30ms;
+
+  --hover-scale:    scale(1.025);
+  --hover-duration: var(--duration-smooth);       /* smooth + snappy */
+  --hover-easing:   var(--easing-snappy);
+
+  --pulse-duration: 1200ms;                       /* 2 × lazy */
+  --pulse-easing:   var(--easing-organic);
+
+  --fast-duration:  var(--duration-fast);         /* button / row micro */
+  --fast-easing:    var(--easing-snappy);
+
+  /* Design tokens — inherit from .dashboard CSS vars, fallback to light-mode values */
+  --color-surface-elevated: var(--color-surface, #FFFFFF);
+  --color-border:           var(--color-border, rgba(0,0,0,0.08));
+  --color-text-light:       var(--color-text, #1A1A1A);
+  --color-text-muted:       var(--color-muted, #5C5C5C);
+  --color-success:          #28C76F;
+  --color-primary:          #C6F200;
+  --color-accent-blue:      #007AFF;
+  --color-error:            #EA5455;
+  --radius-md:              16px;
+  --spacing-sm:             16px;
+  --spacing-md:             24px;
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────────────────── */
+
+/* Entrance: fade-in + slide up */
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse glow ring around the Online dot */
+@keyframes pulseGlow {
+  0% {
+    box-shadow:
+      0 0 0 0   rgba(40, 199, 111, 0.7),
+      0 0 0 0   rgba(40, 199, 111, 0.4);
+    opacity: 1;
+  }
+  60% {
+    box-shadow:
+      0 0 0 8px  rgba(40, 199, 111, 0),
+      0 0 0 16px rgba(40, 199, 111, 0);
+    opacity: 0.85;
+  }
+  100% {
+    box-shadow:
+      0 0 0 0   rgba(40, 199, 111, 0),
+      0 0 0 0   rgba(40, 199, 111, 0);
+    opacity: 1;
+  }
+}
+
+/* Subtle inner glow on the dot itself */
+@keyframes dotBreath {
+  0%, 100% { background-color: #28C76F; filter: brightness(1); }
+  50%       { background-color: #34e882; filter: brightness(1.25); }
+}
+
+/* ── Card ───────────────────────────────────────────────────────────────────── */
+.live-status-card {
+  background:    var(--color-surface-elevated);
+  border:        1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding:       var(--spacing-md);
+  width:         100%;
+  max-width:     420px;
+  font-family:   'Inter', system-ui, sans-serif;
+  color:         var(--color-text-light);
+  cursor:        default;
+  will-change:   transform, opacity;
+
+  /* ── Entrance animation (uses token vars) ── */
+  animation:
+    cardEntrance
+    var(--entrance-duration)
+    var(--entrance-easing)
+    var(--entrance-delay)
+    both;
+
+  /* ── Hover transition (uses token vars) ── */
+  transition:
+    transform var(--hover-duration) var(--hover-easing),
+    border-color 0.2s ease;
+}
+
+.live-status-card:hover {
+  transform:    var(--hover-scale);
+  border-color: var(--color-border-hover, rgba(0,0,0,0.18));
+  box-shadow:   0 8px 24px var(--color-shadow, rgba(0,0,0,0.06));
+}
+
+/* ── Card Header ────────────────────────────────────────────────────────────── */
+.card-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  margin-bottom:   var(--spacing-md);
+}
+
+.card-title-group {
+  display:     flex;
+  align-items: center;
+  gap:         10px;
+}
+
+.card-icon {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  width:           36px;
+  height:          36px;
+  border-radius:   8px;
+  background:      rgba(198, 242, 0, 0.12);
+  color:           var(--color-primary);
+  flex-shrink:     0;
+}
+
+.card-title {
+  font-size:      15px;
+  font-weight:    700;
+  letter-spacing: -0.02em;
+  color:          var(--color-text-light);
+  margin:         0;
+}
+
+.card-subtitle {
+  font-size:   12px;
+  font-weight: 400;
+  color:       var(--color-text-muted);
+  margin:      2px 0 0;
+}
+
+/* ── Status Badge ───────────────────────────────────────────────────────────── */
+.status-badge {
+  display:       flex;
+  align-items:   center;
+  gap:           7px;
+  padding:       5px 12px;
+  border-radius: 999px;
+  font-size:     12px;
+  font-weight:   500;
+  letter-spacing: 0.01em;
+  border:        1px solid transparent;
+  transition:    background var(--duration-smooth) var(--easing-organic),
+                 border-color var(--duration-smooth) var(--easing-organic);
+}
+
+.status-badge.online {
+  background:   rgba(40, 199, 111, 0.12);
+  border-color: rgba(40, 199, 111, 0.3);
+  color:        #28C76F;
+}
+
+.status-badge.offline {
+  background:   rgba(234, 84, 85, 0.12);
+  border-color: rgba(234, 84, 85, 0.3);
+  color:        var(--color-error);
+}
+
+.status-badge.degraded {
+  background:   rgba(198, 242, 0, 0.1);
+  border-color: rgba(198, 242, 0, 0.25);
+  color:        var(--color-primary);
+}
+
+/* ── Pulse Dot ──────────────────────────────────────────────────────────────── */
+.pulse-dot {
+  width:         9px;
+  height:        9px;
+  border-radius: 50%;
+  flex-shrink:   0;
+}
+
+.pulse-dot.online {
+  background-color: #28C76F;
+  /* Pulse glow uses token vars */
+  animation:
+    pulseGlow var(--pulse-duration) var(--pulse-easing) infinite,
+    dotBreath  var(--pulse-duration) var(--pulse-easing) infinite;
+}
+
+.pulse-dot.offline {
+  background-color: var(--color-error);
+}
+
+.pulse-dot.degraded {
+  background-color: var(--color-primary);
+}
+
+/* ── Divider ────────────────────────────────────────────────────────────────── */
+.card-divider {
+  height:     1px;
+  background: var(--color-border);
+  margin:     0 0 var(--spacing-md);
+  border:     none;
+}
+
+/* ── Metrics Grid ───────────────────────────────────────────────────────────── */
+.metrics-grid {
+  display:               grid;
+  grid-template-columns: 1fr 1fr;
+  gap:                   12px;
+  margin-bottom:         var(--spacing-md);
+}
+
+.metric-item {
+  background:    var(--color-surface-el, #F0F0EB);
+  border:        1px solid var(--color-border);
+  border-radius: 8px;
+  padding:       12px var(--spacing-sm);
+  display:       flex;
+  flex-direction: column;
+  gap:           4px;
+}
+
+.metric-label {
+  font-size:   11px;
+  font-weight: 500;
+  color:       var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metric-value {
+  font-size:      22px;
+  font-weight:    700;
+  letter-spacing: -0.03em;
+  line-height:    1;
+}
+
+.metric-value.primary  { color: var(--color-primary); }
+.metric-value.blue     { color: var(--color-accent-blue); }
+.metric-value.success  { color: var(--color-success); }
+.metric-value.muted    { color: var(--color-text-light); }
+
+.metric-delta {
+  font-size:   11px;
+  font-weight: 500;
+  color:       var(--color-text-muted);
+}
+
+.metric-delta.up   { color: var(--color-success); }
+.metric-delta.down { color: var(--color-error); }
+
+/* ── Services List ──────────────────────────────────────────────────────────── */
+.services-section-label {
+  font-size:      11px;
+  font-weight:    500;
+  color:          var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom:  10px;
+}
+
+.services-list {
+  display:        flex;
+  flex-direction: column;
+  gap:            8px;
+  margin-bottom:  var(--spacing-md);
+}
+
+.service-row {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         10px var(--spacing-sm);
+  background:      var(--color-surface-el, #F0F0EB);
+  border:          1px solid var(--color-border);
+  border-radius:   8px;
+  transition:      background var(--duration-fast) var(--easing-snappy),
+                   border-color var(--duration-fast) var(--easing-snappy);
+}
+
+.service-row:hover {
+  background:   var(--color-bg-alt, #F5F5F0);
+  border-color: var(--color-border-hover, rgba(0,0,0,0.18));
+}
+
+.service-name {
+  font-size:   13px;
+  font-weight: 500;
+  color:       var(--color-text-light);
+}
+
+.service-right {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+}
+
+.service-latency {
+  font-size:   12px;
+  font-weight: 400;
+  color:       var(--color-text-muted);
+}
+
+.service-dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+}
+
+.service-dot.online   { background: var(--color-success); }
+.service-dot.offline  { background: var(--color-error); }
+.service-dot.degraded { background: var(--color-primary); }
+
+/* ── Footer ─────────────────────────────────────────────────────────────────── */
+.card-footer {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+}
+
+.last-updated {
+  font-size:   11px;
+  font-weight: 400;
+  color:       var(--color-text-muted);
+}
+
+.refresh-btn {
+  display:       flex;
+  align-items:   center;
+  gap:           5px;
+  background:    rgba(198, 242, 0, 0.1);
+  border:        1px solid rgba(198, 242, 0, 0.2);
+  border-radius: var(--radius-md);
+  color:         var(--color-primary);
+  font-size:     12px;
+  font-weight:   500;
+  font-family:   'Inter', system-ui, sans-serif;
+  padding:       6px 14px;
+  cursor:        pointer;
+  transition:    background var(--duration-fast) var(--easing-snappy),
+                 border-color var(--duration-fast) var(--easing-snappy),
+                 transform var(--duration-fast) var(--easing-snappy);
+}
+
+.refresh-btn:hover {
+  background:   rgba(198, 242, 0, 0.18);
+  border-color: rgba(198, 242, 0, 0.4);
+  transform:    translateY(-1px);
+}
+
+.refresh-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Spinning icon on refresh ───────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.refresh-btn.refreshing .btn-icon {
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Auralis Waveform (self-contained so card works standalone) ─────────────── */
+@keyframes waveBar {
+  0%, 100% { transform: scaleY(0.25); opacity: 0.45; }
+  50%       { transform: scaleY(1);   opacity: 1; }
+}
+
+.auralis-waveform {
+  display:     flex;
+  align-items: center;
+  gap:         3px;
+  height:      20px;
+  margin-top:  4px;
+}
+
+.auralis-wave-bar {
+  width:            3px;
+  border-radius:    2px;
+  background:       var(--color-success);   /* green = online */
+  transform-origin: bottom center;
+  animation:        waveBar ease-in-out infinite;
+}
+
+/* 12 bars — staggered */
+.auralis-wave-bar:nth-child(1)  { height:60%;  animation-duration:0.9s;  animation-delay:0s; }
+.auralis-wave-bar:nth-child(2)  { height:90%;  animation-duration:1.1s;  animation-delay:0.08s; }
+.auralis-wave-bar:nth-child(3)  { height:70%;  animation-duration:0.8s;  animation-delay:0.16s; }
+.auralis-wave-bar:nth-child(4)  { height:100%; animation-duration:1.3s;  animation-delay:0.24s; }
+.auralis-wave-bar:nth-child(5)  { height:55%;  animation-duration:1.0s;  animation-delay:0.32s; }
+.auralis-wave-bar:nth-child(6)  { height:80%;  animation-duration:0.75s; animation-delay:0.40s; }
+.auralis-wave-bar:nth-child(7)  { height:95%;  animation-duration:1.2s;  animation-delay:0.48s; }
+.auralis-wave-bar:nth-child(8)  { height:65%;  animation-duration:0.85s; animation-delay:0.56s; }
+.auralis-wave-bar:nth-child(9)  { height:75%;  animation-duration:1.05s; animation-delay:0.64s; }
+.auralis-wave-bar:nth-child(10) { height:50%;  animation-duration:0.95s; animation-delay:0.72s; }
+.auralis-wave-bar:nth-child(11) { height:85%;  animation-duration:1.15s; animation-delay:0.80s; }
+.auralis-wave-bar:nth-child(12) { height:60%;  animation-duration:0.90s; animation-delay:0.88s; }
+
+/* Status colour variants */
+.auralis-waveform.degraded .auralis-wave-bar {
+  background:         var(--color-primary);   /* lime = degraded */
+  animation-duration: 2s !important;
+  opacity:            0.65;
+}
+
+.auralis-waveform.offline .auralis-wave-bar {
+  background:              var(--color-error);
+  animation-play-state:    paused;
+  opacity:                 0.35;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .auralis-wave-bar { animation: none !important; opacity: 0.5; }
+}

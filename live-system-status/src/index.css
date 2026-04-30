@@ -1,0 +1,36 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Global styles — Hilo Design System
+   Light mode default (matches hilo.com/en-gb/pages/science)
+   Inter font · 8-pt grid · white surface · #1A1A1A text
+───────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin:     0;
+  padding:    0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: #FFFFFF;   /* surface-white — Hilo light default */
+  color:            #1A1A1A;   /* text-primary */
+  font-family:      'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing:  antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* ── App shell — full-page dashboard wrapper ── */
+.app-shell {
+  min-height: 100vh;
+  background: #FFFFFF;
+}
