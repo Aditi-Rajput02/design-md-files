@@ -47,10 +47,11 @@ const fragmentShader = `
     return v;
   }
 
-  /* Scanline retro pattern */
-  float scanline(vec2 uv, float time) {
-    float line = sin((uv.y * uResolution.y * 0.5) + time * 2.0) * 0.5 + 0.5;
-    return 1.0 - line * 0.08;
+  /* VHS-style horizontal jitter */
+  vec2 vhsJitter(vec2 uv, float strength, float time) {
+    float band = step(0.98, fract(uv.y * 30.0 + time * 3.0));
+    float jit  = (hash(vec2(floor(uv.y * 30.0), time)) - 0.5) * 0.012 * strength;
+    return vec2(uv.x + jit * band, uv.y);
   }
 
   void main() {
@@ -66,8 +67,8 @@ const fragmentShader = `
     float falloff = 1.0 - smoothstep(0.0, radius, dist);
     float effect  = falloff * str;
 
-    /* Clean UV — no jitter or zigzag */
-    vec2 jitUV = uv;
+    /* VHS jitter on strong effect */
+    vec2 jitUV = vhsJitter(uv, effect, uTime);
 
     /* ── RYB Retro Chromatic Split ──
        Red   → offset away from mouse
@@ -111,10 +112,6 @@ const fragmentShader = `
     vec3 warm = mix(vec3(0.18, 0.08, 0.02), vec3(1.0, 0.95, 0.80), lum);
     vec3 cool = mix(vec3(0.02, 0.05, 0.18), vec3(0.85, 0.90, 1.0),  lum);
     vec3 grade = mix(ryb, mix(warm, cool, smoothstep(0.0, 1.0, lum)), 0.25 * effect);
-
-    /* Scanlines */
-    float scan = scanline(uv, uTime);
-    grade *= scan;
 
     /* Film grain */
     float grain = (hash(uv * 600.0 + uTime * 17.3) - 0.5) * 0.045 * (0.3 + effect * 0.7);
